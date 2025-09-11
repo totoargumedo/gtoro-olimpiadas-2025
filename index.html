@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Torneo GToro 3.0 - Olimpiadas 2025</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React y Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Firebase -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        onSnapshot,
+        updateDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      window.firebase = {
+        initializeApp,
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        onSnapshot,
+        updateDoc,
+      };
+    </script>
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f0f2f5;
+      }
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .modal-content {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        width: 90%;
+        max-width: 600px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, createContext, useContext } = React;
+      const { initializeApp } = window.firebase;
+      const {
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+      } = window.firebase;
+      const { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } =
+        window.firebase;
+
+      // --- CONFIGURACIÓN DE FIREBASE ---
+      const firebaseConfig = {
+        apiKey: "AIzaSyD5nk9wzovy3btArx4dBgW2eSXkkB-sYFk",
+        authDomain: "gtoro-olimpiadas-2025.firebaseapp.com",
+        projectId: "gtoro-olimpiadas-2025",
+        storageBucket: "gtoro-olimpiadas-2025.firebasestorage.app",
+        messagingSenderId: "564978583170",
+        appId: "1:564978583170:web:e1f2741ffb1a8aa6fdd69b",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      // --- CONTEXTO DE AUTENTICACIÓN ---
+      const AuthContext = createContext(null);
+
+      const AuthProvider = ({ children }) => {
+        const [user, setUser] = useState(null);
+        const [loading, setLoading] = useState(true);
+
+        useEffect(() => {
+          const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+            setLoading(false);
+          });
+          return () => unsubscribe();
+        }, []);
+
+        const value = { user, loading };
+
+        return (
+          <AuthContext.Provider value={value}>
+            {!loading && children}
+          </AuthContext.Provider>
+        );
+      };
+
+      const useAuth = () => {
+        return useContext(AuthContext);
+      };
+
+      // --- DATOS INICIALES DEL TORNEO ---
+      const TORNEO_ID_GLOBAL = "olimpiadas-2025-gtoro";
+
+      const initialTournamentData = {
+        eventName: "Olimpiadas 2025 - GToro 3.0",
+        publicViewId:
+          "tok-" +
+          Math.random().toString(36).substr(2) +
+          Math.random().toString(36).substr(2),
+        teams: {
+          Rojo: { name: "Rojo", pilots: ["", "", ""], points: 0 },
+          Azul: { name: "Azul", pilots: ["", "", ""], points: 0 },
+          Verde: { name: "Verde", pilots: ["", "", ""], points: 0 },
+          Amarillo: { name: "Amarillo", pilots: ["", "", ""], points: 0 },
+        },
+        matches: [],
+      };
+
+      // --- COMPONENTES ---
+
+      function PublicView() {
+        // ... (Componente sin cambios)
+      }
+
+      // --- COMPONENTES DE ADMINISTRACIÓN ---
+
+      function ScoreMatchForm({ match, initialPoints, onSave, onCancel }) {
+        const [scores, setScores] = useState({
+          orbitas: 0,
+          orbitasAmplificador: 0,
+          rocasLunares: 0,
+          estacionamientoParcial: 0,
+          estacionamientoTotal: 0,
+          amplificadorEnPedestal: false,
+          tarjetasAmarillas: 0,
+        });
+
+        const calculateTotal = () => {
+          let total = 0;
+          total += (scores.orbitas || 0) * 3;
+          total += (scores.orbitasAmplificador || 0) * 5;
+          total += (scores.rocasLunares || 0) * 8;
+          total += (scores.estacionamientoParcial || 0) * 3;
+          total += (scores.estacionamientoTotal || 0) * 5;
+          if (scores.amplificadorEnPedestal) total += 20;
+          total -= (scores.tarjetasAmarillas || 0) * 2;
+          return total;
+        };
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          const totalScore = calculateTotal();
+          const pointDifference = totalScore - initialPoints;
+          onSave(match.id, totalScore, pointDifference, scores);
+        };
+
+        return (
+          <div className="modal-backdrop">
+            <div className="modal-content">
+              <h3 className="text-2xl font-bold mb-4">
+                Registrar Puntos para {match.alliance.join(" y ")}
+              </h3>
+              <form
+                onSubmit={handleSubmit}
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              >
+                {Object.keys(scores).map((key) => (
+                  <div
+                    key={key}
+                    className={
+                      typeof scores[key] === "boolean" ? "md:col-span-2" : ""
+                    }
+                  >
+                    <label className="block text-sm font-medium text-gray-700 capitalize">
+                      {key.replace(/([A-Z])/g, " $1")}
+                    </label>
+                    {typeof scores[key] === "boolean" ? (
+                      <input
+                        type="checkbox"
+                        name={key}
+                        checked={scores[key]}
+                        onChange={(e) =>
+                          setScores((s) => ({ ...s, [key]: e.target.checked }))
+                        }
+                        className="mt-1 h-5 w-5"
+                      />
+                    ) : (
+                      <input
+                        type="number"
+                        name={key}
+                        value={scores[key]}
+                        onChange={(e) =>
+                          setScores((s) => ({
+                            ...s,
+                            [key]: parseInt(e.target.value) || 0,
+                          }))
+                        }
+                        min="0"
+                        className="w-full mt-1 px-3 py-2 border rounded-md"
+                      />
+                    )}
+                  </div>
+                ))}
+                <div className="md:col-span-2 text-center mt-4">
+                  <p className="text-xl font-bold">
+                    Total: {calculateTotal()} Puntos
+                  </p>
+                </div>
+                <div className="md:col-span-2 flex justify-end gap-4 mt-4">
+                  <button
+                    type="button"
+                    onClick={onCancel}
+                    className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+      }
+
+      function AddMatchForm({ teamNames, onAddMatch }) {
+        const [round, setRound] = useState(1);
+        const [team1, setTeam1] = useState("");
+        const [team2, setTeam2] = useState("");
+        const [error, setError] = useState("");
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          setError("");
+          if (!team1 || !team2 || team1 === team2) {
+            setError("Debes seleccionar dos equipos diferentes.");
+            return;
+          }
+          const newMatch = {
+            id: `r${round}-${team1}-${team2}-${Date.now()}`,
+            round: parseInt(round),
+            alliance: [team1, team2],
+            finished: false,
+            score: 0,
+            commentary: "",
+          };
+          onAddMatch(newMatch);
+          setTeam1("");
+          setTeam2("");
+        };
+
+        return (
+          <form
+            onSubmit={handleSubmit}
+            className="p-4 bg-gray-50 rounded-lg border space-y-3"
+          >
+            <h3 className="text-lg font-semibold">Crear Nueva Alianza</h3>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <input
+                type="number"
+                value={round}
+                onChange={(e) => setRound(e.target.value)}
+                min="1"
+                className="p-2 border rounded-md"
+                placeholder="Ronda"
+                required
+              />
+              <select
+                value={team1}
+                onChange={(e) => setTeam1(e.target.value)}
+                className="p-2 border rounded-md"
+                required
+              >
+                <option value="">Seleccionar Equipo 1</option>
+                {teamNames.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={team2}
+                onChange={(e) => setTeam2(e.target.value)}
+                className="p-2 border rounded-md"
+                required
+              >
+                <option value="">Seleccionar Equipo 2</option>
+                {teamNames.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            >
+              Añadir Alianza
+            </button>
+          </form>
+        );
+      }
+
+      function AdminDashboard() {
+        const [torneo, setTorneo] = useState(null);
+        const [geminiApiKey, setGeminiApiKey] = useState(
+          () => localStorage.getItem("geminiApiKey") || ""
+        );
+        const [loadingCommentary, setLoadingCommentary] = useState(null);
+        const [scoringMatch, setScoringMatch] = useState(null);
+
+        useEffect(() => {
+          const docRef = doc(db, "tournaments", TORNEO_ID_GLOBAL);
+          const unsubscribe = onSnapshot(
+            docRef,
+            (docSnap) => {
+              if (docSnap.exists()) {
+                setTorneo(docSnap.data());
+              } else {
+                setDoc(docRef, initialTournamentData).then(() =>
+                  setTorneo(initialTournamentData)
+                );
+              }
+            },
+            (error) => console.error("Error fetching tournament:", error)
+          );
+          return () => unsubscribe();
+        }, []);
+
+        const updateTournament = async (newData) => {
+          const docRef = doc(db, "tournaments", TORNEO_ID_GLOBAL);
+          await updateDoc(docRef, newData);
+        };
+
+        const handleAddMatch = (newMatch) => {
+          const updatedMatches = [...torneo.matches, newMatch];
+          updateTournament({ matches: updatedMatches });
+        };
+
+        const handleSaveScore = (
+          matchId,
+          newScore,
+          pointDifference,
+          details
+        ) => {
+          const updatedMatches = torneo.matches.map((m) =>
+            m.id === matchId
+              ? { ...m, finished: true, score: newScore, details }
+              : m
+          );
+
+          const match = torneo.matches.find((m) => m.id === matchId);
+          const updatedTeams = JSON.parse(JSON.stringify(torneo.teams)); // Deep copy
+          match.alliance.forEach((teamName) => {
+            if (updatedTeams[teamName]) {
+              updatedTeams[teamName].points =
+                (updatedTeams[teamName].points || 0) + pointDifference;
+            }
+          });
+
+          updateTournament({ matches: updatedMatches, teams: updatedTeams });
+          setScoringMatch(null);
+        };
+
+        const generateCommentary = async (matchId) => {
+          // ... (Función sin cambios)
+        };
+
+        const copyPublicLink = () => {
+          const link = `${window.location.origin}/torneo/${torneo.publicViewId}`;
+          navigator.clipboard
+            .writeText(link)
+            .then(() => alert("Enlace copiado al portapapeles!"));
+        };
+
+        if (!torneo)
+          return (
+            <div className="flex justify-center items-center h-screen">
+              <div className="loader"></div>
+            </div>
+          );
+
+        const sortedMatches = [...torneo.matches].sort(
+          (a, b) => a.round - b.round
+        );
+
+        return (
+          <div className="container mx-auto p-4 md:p-8">
+            {scoringMatch && (
+              <ScoreMatchForm
+                match={scoringMatch}
+                initialPoints={scoringMatch.score}
+                onSave={handleSaveScore}
+                onCancel={() => setScoringMatch(null)}
+              />
+            )}
+            <header className="flex flex-wrap justify-between items-center mb-8 gap-4">
+              <h1 className="text-2xl md:text-3xl font-bold">
+                Panel de Administración
+              </h1>
+              <div>
+                <button
+                  onClick={copyPublicLink}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mr-4 transition"
+                >
+                  Copiar Enlace
+                </button>
+                <button
+                  onClick={() => signOut(auth)}
+                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition"
+                >
+                  Cerrar Sesión
+                </button>
+              </div>
+            </header>
+
+            <div className="space-y-8">
+              {/* Gemini API Key */}
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <h2 className="text-xl font-bold mb-2">
+                  ✨ Configuración de IA (Gemini)
+                </h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Ingresa tu API Key de Google Gemini para habilitar la
+                  generación de resúmenes de partidos.
+                </p>
+                <input
+                  type="password"
+                  value={geminiApiKey}
+                  onChange={(e) => {
+                    setGeminiApiKey(e.target.value);
+                    localStorage.setItem("geminiApiKey", e.target.value);
+                  }}
+                  placeholder="Introduce tu Gemini API Key"
+                  className="w-full px-3 py-2 border rounded-md"
+                />
+              </div>
+
+              {/* Match Management */}
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <h2 className="text-2xl font-bold mb-4">Gestión de Partidos</h2>
+                <AddMatchForm
+                  teamNames={Object.keys(torneo.teams)}
+                  onAddMatch={handleAddMatch}
+                />
+
+                <div className="mt-6 space-y-4">
+                  {sortedMatches.map((match) => (
+                    <div
+                      key={match.id}
+                      className="border-t mt-4 pt-4 flex justify-between items-center"
+                    >
+                      <div>
+                        <p className="font-bold">
+                          Ronda {match.round}: {match.alliance.join(" y ")}
+                        </p>
+                        <p
+                          className={
+                            match.finished
+                              ? "text-green-600"
+                              : "text-orange-500"
+                          }
+                        >
+                          {match.finished
+                            ? `Finalizado: ${match.score} pts`
+                            : "Pendiente"}
+                        </p>
+                        {match.commentary && (
+                          <p className="text-sm italic mt-1 text-gray-600">
+                            "{match.commentary}"
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setScoringMatch(match)}
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-sm"
+                        >
+                          {match.finished ? "Editar Puntos" : "Cargar Puntos"}
+                        </button>
+                        {match.finished && (
+                          <button
+                            onClick={() => generateCommentary(match.id)}
+                            disabled={loadingCommentary === match.id}
+                            className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-1 px-3 rounded text-sm disabled:bg-gray-400"
+                          >
+                            {loadingCommentary === match.id ? "..." : "✨ IA"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function Login() {
+        // ... (Componente sin cambios)
+      }
+
+      // --- ENRUTADOR Y APP PRINCIPAL ---
+      function App() {
+        const { user, loading } = useAuth();
+        const path = window.location.pathname;
+
+        if (loading) {
+          return (
+            <div className="flex justify-center items-center h-screen">
+              <div className="loader"></div>
+            </div>
+          );
+        }
+
+        // URL Pública: /torneo/<id>
+        if (path.startsWith("/torneo/")) {
+          return <PublicView />;
+        }
+
+        // URL de Acceso: /login
+        if (path.startsWith("/login")) {
+          // Si el usuario ya está logueado, lo llevamos al panel. Si no, mostramos el login.
+          return user ? <AdminDashboard /> : <Login />;
+        }
+
+        // Cualquier otra URL (incluyendo '/' y '/admin') es espacio protegido.
+        // Si hay un usuario, se muestra el panel. Si no, se muestra el login.
+        return user ? <AdminDashboard /> : <Login />;
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      );
+    </script>
+  </body>
+</html>
