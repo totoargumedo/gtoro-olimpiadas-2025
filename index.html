@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Torneo GToro 3.0 - Olimpiadas 2025</title>
@@ -12,508 +12,801 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Firebase -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        window.firebase = { initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc };
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        onSnapshot,
+        updateDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      window.firebase = {
+        initializeApp,
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        onSnapshot,
+        updateDoc,
+      };
     </script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f0f2f5;
+      }
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        100% {
+          transform: rotate(360deg);
         }
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            width: 90%;
-            max-width: 600px;
-        }
+      }
+      .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .modal-content {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        width: 90%;
+        max-width: 600px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, createContext, useContext } = React;
-        const { initializeApp } = window.firebase;
-        const { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } = window.firebase;
-        const { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } = window.firebase;
-        
-        // --- CONFIGURACIÓN DE FIREBASE ---
-        const firebaseConfig = {
-  apiKey: "AIzaSyD5nk9wzovy3btArx4dBgW2eSXkkB-sYFk",
-  authDomain: "gtoro-olimpiadas-2025.firebaseapp.com",
-  projectId: "gtoro-olimpiadas-2025",
-  storageBucket: "gtoro-olimpiadas-2025.firebasestorage.app",
-  messagingSenderId: "564978583170",
-  appId: "1:564978583170:web:e1f2741ffb1a8aa6fdd69b"
-};
+      const { useState, useEffect, createContext, useContext } = React;
+      const { initializeApp } = window.firebase;
+      const {
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+      } = window.firebase;
+      const { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } =
+        window.firebase;
 
-        // --- VERIFICACIÓN DE CONFIGURACIÓN ---
-        function checkFirebaseConfig() {
-            if (firebaseConfig.apiKey === "TU_API_KEY" || !firebaseConfig.apiKey) {
-                const root = document.getElementById('root');
-                root.innerHTML = `
+      // --- CONFIGURACIÓN DE FIREBASE ---
+      const firebaseConfig = {
+        apiKey: "AIzaSyD5nk9wzovy3btArx4dBgW2eSXkkB-sYFk",
+        authDomain: "gtoro-olimpiadas-2025.firebaseapp.com",
+        projectId: "gtoro-olimpiadas-2025",
+        storageBucket: "gtoro-olimpiadas-2025.firebasestorage.app",
+        messagingSenderId: "564978583170",
+        appId: "1:564978583170:web:e1f2741ffb1a8aa6fdd69b",
+      };
+
+      // --- VERIFICACIÓN DE CONFIGURACIÓN ---
+      function checkFirebaseConfig() {
+        if (firebaseConfig.apiKey === "TU_API_KEY" || !firebaseConfig.apiKey) {
+          const root = document.getElementById("root");
+          root.innerHTML = `
                     <div style="padding: 2rem; text-align: center; font-family: sans-serif; background-color: #fff1f2; border: 1px solid #ffdde0; margin: 2rem; border-radius: 8px;">
                         <h1 style="color: #be123c; font-size: 1.5rem; margin-bottom: 1rem;">Error de Configuración</h1>
                         <p>No has configurado tus credenciales de Firebase en el archivo <strong>index.html</strong>.</p>
                         <p>Por favor, reemplaza el objeto <code>firebaseConfig</code> con las claves de tu proyecto de Firebase para continuar.</p>
                     </div>
                 `;
-                return false;
-            }
-            return true;
+          return false;
         }
+        return true;
+      }
 
-        if (checkFirebaseConfig()) {
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
+      if (checkFirebaseConfig()) {
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-            // --- CONTEXTO DE AUTENTICACIÓN ---
-            const AuthContext = createContext(null);
+        // --- CONTEXTO DE AUTENTICACIÓN ---
+        const AuthContext = createContext(null);
 
-            const AuthProvider = ({ children }) => {
-                const [user, setUser] = useState(null);
-                const [loading, setLoading] = useState(true);
+        const AuthProvider = ({ children }) => {
+          const [user, setUser] = useState(null);
+          const [loading, setLoading] = useState(true);
 
-                useEffect(() => {
-                    const unsubscribe = onAuthStateChanged(auth, (user) => {
-                        setUser(user);
-                        setLoading(false);
-                    });
-                    return () => unsubscribe();
-                }, []);
-                
-                const value = { user, loading };
+          useEffect(() => {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+              setUser(user);
+              setLoading(false);
+            });
+            return () => unsubscribe();
+          }, []);
 
-                return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
-            };
+          const value = { user, loading };
 
-            const useAuth = () => {
-                return useContext(AuthContext);
-            };
-            
-            // --- DATOS INICIALES DEL TORNEO ---
-            const TORNEO_ID_GLOBAL = "olimpiadas-2025-gtoro";
+          return (
+            <AuthContext.Provider value={value}>
+              {!loading && children}
+            </AuthContext.Provider>
+          );
+        };
 
-            const initialTournamentData = {
-                eventName: "Olimpiadas 2025 - GToro 3.0",
-                publicViewId: "tok-" + Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2),
-                teams: {
-                    Rojo: { name: "Rojo", pilots: ["", "", ""], points: 0 },
-                    Azul: { name: "Azul", pilots: ["", "", ""], points: 0 },
-                    Verde: { name: "Verde", pilots: ["", "", ""], points: 0 },
-                    Amarillo: { name: "Amarillo", pilots: ["", "", ""], points: 0 },
-                },
-                matches: []
-            };
-            
-            // --- COMPONENTES ---
-            function PublicView() {
-                const [torneo, setTorneo] = useState(null);
-                const [loading, setLoading] = useState(true);
-                const [error, setError] = useState(null);
-                const publicId = window.location.pathname.split('/')[2];
-                
-                useEffect(() => {
-                    const docRef = doc(db, "tournaments", TORNEO_ID_GLOBAL);
-                    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-                        if (docSnap.exists() && docSnap.data().publicViewId === publicId) {
-                            setTorneo(docSnap.data());
-                            setError(null);
-                        } else {
-                            setError("Torneo no encontrado o enlace inválido.");
-                        }
-                        setLoading(false);
-                    });
-                    return () => unsubscribe();
-                }, [publicId]);
+        const useAuth = () => {
+          return useContext(AuthContext);
+        };
 
-                if (loading) return <div className="flex justify-center items-center h-screen"><div className="loader"></div></div>;
-                if (error) return <div className="text-center mt-10 text-red-500">{error}</div>;
+        // --- DATOS INICIALES DEL TORNEO ---
+        const TORNEO_ID_GLOBAL = "olimpiadas-2025-gtoro";
 
-                const rankedTeams = torneo ? Object.values(torneo.teams).sort((a, b) => b.points - a.points) : [];
-                const sortedMatches = torneo && torneo.matches ? [...torneo.matches].sort((a,b) => a.round - b.round) : [];
+        const initialTournamentData = {
+          eventName: "Olimpiadas 2025 - GToro 3.0",
+          publicViewId:
+            "tok-" +
+            Math.random().toString(36).substr(2) +
+            Math.random().toString(36).substr(2),
+          teams: {
+            Rojo: { name: "Rojo", pilots: ["", "", ""], points: 0 },
+            Azul: { name: "Azul", pilots: ["", "", ""], points: 0 },
+            Verde: { name: "Verde", pilots: ["", "", ""], points: 0 },
+            Amarillo: { name: "Amarillo", pilots: ["", "", ""], points: 0 },
+            Violeta: { name: "Violeta", pilots: ["", "", ""], points: 0 },
+            Naranja: { name: "Naranja", pilots: ["", "", ""], points: 0 },
+          },
+          matches: [],
+        };
 
-                return (
-                    <div className="container mx-auto p-4 md:p-8">
-                        <header className="text-center mb-8">
-                            <h1 className="text-4xl md:text-5xl font-bold text-gray-800">{torneo.eventName}</h1>
-                            <p className="text-gray-600 mt-2">Resultados en Vivo</p>
-                        </header>
-                        <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                            <h2 className="text-2xl font-bold mb-4 text-center">Tabla de Posiciones</h2>
-                            <ol className="space-y-3">
-                                {rankedTeams.map((team, index) => (
-                                    <li key={team.name} className={`flex justify-between items-center p-4 rounded-lg text-white shadow ${
-                                        index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-yellow-700' : 'bg-blue-500'
-                                    }`}>
-                                        <div className="flex items-center">
-                                            <span className="text-lg font-bold mr-4">{index + 1}</span>
-                                            <span className="text-xl">{team.name}</span>
-                                        </div>
-                                        <span className="text-2xl font-bold">{team.points} Pts</span>
-                                    </li>
-                                ))}
-                            </ol>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl shadow-lg">
-                            <h2 className="text-2xl font-bold mb-4 text-center">Fixture y Resultados</h2>
-                            <div className="space-y-4">
-                                {sortedMatches.length > 0 ? sortedMatches.map(match => (
-                                    <div key={match.id} className="border border-gray-200 p-4 rounded-lg shadow-sm">
-                                        <p className="font-bold text-lg">Ronda {match.round}: Alianza {match.alliance.join(' y ')}</p>
-                                        {match.finished ? (
-                                            <div>
-                                                <p className="text-green-600 font-bold text-xl">{match.score} Puntos</p>
-                                                {match.commentary && (
-                                                     <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                                        <p className="text-sm font-semibold text-blue-800">✨ Comentario de la IA:</p>
-                                                        <p className="text-blue-700 italic">"{match.commentary}"</p>
-                                                     </div>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <p className="text-orange-500">Pendiente</p>
-                                        )}
-                                    </div>
-                                )) : <p className="text-center text-gray-500">El fixture aún no ha sido cargado.</p>}
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-            
-            function ScoreMatchForm({ match, onSave, onCancel }) {
-                const initialPoints = match.score || 0;
-                const [scores, setScores] = useState(match.details || {
-                    orbitas: 0, orbitasAmplificador: 0, rocasLunares: 0,
-                    estacionamientoParcial: 0, estacionamientoTotal: 0,
-                    amplificadorEnPedestal: false, tarjetasAmarillas: 0
-                });
+        // --- COMPONENTES ---
+        function PublicView() {
+          const [torneo, setTorneo] = useState(null);
+          const [loading, setLoading] = useState(true);
+          const [error, setError] = useState(null);
+          const publicId = window.location.pathname.split("/")[2];
 
-                const calculateTotal = () => {
-                    let total = 0;
-                    total += (scores.orbitas || 0) * 3;
-                    total += (scores.orbitasAmplificador || 0) * 5;
-                    total += (scores.rocasLunares || 0) * 8;
-                    total += (scores.estacionamientoParcial || 0) * 3;
-                    total += (scores.estacionamientoTotal || 0) * 5;
-                    if (scores.amplificadorEnPedestal) total += 20;
-                    total -= (scores.tarjetasAmarillas || 0) * 2;
-                    return total;
-                };
+          useEffect(() => {
+            const docRef = doc(db, "tournaments", TORNEO_ID_GLOBAL);
+            const unsubscribe = onSnapshot(docRef, (docSnap) => {
+              if (
+                docSnap.exists() &&
+                docSnap.data().publicViewId === publicId
+              ) {
+                setTorneo(docSnap.data());
+                setError(null);
+              } else {
+                setError("Torneo no encontrado o enlace inválido.");
+              }
+              setLoading(false);
+            });
+            return () => unsubscribe();
+          }, [publicId]);
 
-                const handleSubmit = (e) => {
-                    e.preventDefault();
-                    onSave(match.id, calculateTotal(), scores);
-                };
-
-                return (
-                    <div className="modal-backdrop">
-                        <div className="modal-content">
-                            <h3 className="text-2xl font-bold mb-4">Registrar Puntos para {match.alliance.join(' y ')}</h3>
-                            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {Object.keys(scores).map(key => (
-                                    <div key={key} className={typeof scores[key] === 'boolean' ? 'md:col-span-2 flex items-center gap-2' : ''}>
-                                        <label className="block text-sm font-medium text-gray-700 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
-                                        {typeof scores[key] === 'boolean' ? (
-                                            <input type="checkbox" name={key} checked={scores[key]} onChange={e => setScores(s => ({...s, [key]: e.target.checked}))} className="mt-1 h-5 w-5"/>
-                                        ) : (
-                                            <input type="number" name={key} value={scores[key]} onChange={e => setScores(s => ({...s, [key]: parseInt(e.target.value) || 0}))} min="0" className="w-full mt-1 px-3 py-2 border rounded-md"/>
-                                        )}
-                                    </div>
-                                ))}
-                                <div className="md:col-span-2 text-center mt-4">
-                                    <p className="text-xl font-bold">Total: {calculateTotal()} Puntos</p>
-                                </div>
-                                <div className="md:col-span-2 flex justify-end gap-4 mt-4">
-                                    <button type="button" onClick={onCancel} className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded">Cancelar</button>
-                                    <button type="submit" className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Guardar</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                );
-            }
-
-            function AddMatchForm({ teamNames, onAddMatch, existingMatches }) {
-                const [round, setRound] = useState(1);
-                const [team1, setTeam1] = useState('');
-                const [team2, setTeam2] = useState('');
-                const [error, setError] = useState('');
-
-                const handleSubmit = (e) => {
-                    e.preventDefault();
-                    setError('');
-                    if (!team1 || !team2 || team1 === team2) {
-                        setError('Debes seleccionar dos equipos diferentes.');
-                        return;
-                    }
-                    const allianceExists = existingMatches.some(m => m.round == round && ((m.alliance.includes(team1) && m.alliance.includes(team2))));
-                    if(allianceExists) {
-                        setError(`La alianza ${team1} y ${team2} ya existe en la ronda ${round}.`);
-                        return;
-                    }
-                    const newMatch = {
-                        id: `r${round}-${team1}-${team2}-${Date.now()}`,
-                        round: parseInt(round),
-                        alliance: [team1, team2],
-                        finished: false, score: 0, commentary: '', details: null
-                    };
-                    onAddMatch(newMatch);
-                    setTeam1(''); setTeam2('');
-                };
-
-                return (
-                    <form onSubmit={handleSubmit} className="p-4 bg-gray-50 rounded-lg border space-y-3">
-                         <h3 className="text-lg font-semibold">Crear Nueva Alianza</h3>
-                         {error && <p className="text-red-500 text-sm p-2 bg-red-100 rounded-md">{error}</p>}
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                             <input type="number" value={round} onChange={e => setRound(e.target.value)} min="1" className="p-2 border rounded-md" placeholder="Ronda" required/>
-                             <select value={team1} onChange={e => setTeam1(e.target.value)} className="p-2 border rounded-md" required>
-                                <option value="">Seleccionar Equipo 1</option>
-                                {teamNames.map(t => <option key={t} value={t}>{t}</option>)}
-                             </select>
-                             <select value={team2} onChange={e => setTeam2(e.target.value)} className="p-2 border rounded-md" required>
-                                <option value="">Seleccionar Equipo 2</option>
-                                {teamNames.map(t => <option key={t} value={t}>{t}</option>)}
-                             </select>
-                         </div>
-                         <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Añadir Alianza</button>
-                    </form>
-                );
-            }
-
-            function AdminDashboard() {
-                const [torneo, setTorneo] = useState(null);
-                const [geminiApiKey, setGeminiApiKey] = useState(() => localStorage.getItem('geminiApiKey') || '');
-                const [loadingCommentary, setLoadingCommentary] = useState(null);
-                const [scoringMatch, setScoringMatch] = useState(null);
-
-                useEffect(() => {
-                    const docRef = doc(db, "tournaments", TORNEO_ID_GLOBAL);
-                    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-                        if (docSnap.exists()) {
-                            setTorneo(docSnap.data());
-                        } else {
-                            setDoc(docRef, initialTournamentData).then(() => setTorneo(initialTournamentData));
-                        }
-                    }, (error) => console.error("Error fetching tournament:", error));
-                    return () => unsubscribe();
-                }, []);
-
-                const updateTournament = async (newData) => {
-                    const docRef = doc(db, "tournaments", TORNEO_ID_GLOBAL);
-                    await updateDoc(docRef, newData);
-                };
-                
-                const handleAddMatch = (newMatch) => {
-                    const updatedMatches = [...(torneo.matches || []), newMatch];
-                    updateTournament({ matches: updatedMatches });
-                };
-                
-                const handleSaveScore = (matchId, newScore, details) => {
-                    const updatedMatches = torneo.matches.map(m =>
-                        m.id === matchId ? { ...m, finished: true, score: newScore, details } : m
-                    );
-                    
-                    const updatedTeams = JSON.parse(JSON.stringify(torneo.teams));
-                    Object.keys(updatedTeams).forEach(teamName => {
-                        updatedTeams[teamName].points = 0;
-                    });
-                    updatedMatches.forEach(m => {
-                        if(m.finished){
-                            m.alliance.forEach(teamName => {
-                                if(updatedTeams[teamName]){
-                                    updatedTeams[teamName].points += m.score;
-                                }
-                            });
-                        }
-                    });
-
-                    updateTournament({ matches: updatedMatches, teams: updatedTeams });
-                    setScoringMatch(null);
-                };
-
-                const generateCommentary = async (matchId) => {
-                    // ... (implementación de Gemini sin cambios)
-                };
-
-                const copyPublicLink = () => {
-                    if (!torneo || !torneo.publicViewId) return;
-                    const link = `${window.location.origin}/torneo/${torneo.publicViewId}`;
-                    navigator.clipboard.writeText(link).then(() => alert('Enlace copiado al portapapeles!'));
-                };
-                
-                if (!torneo) return <div className="flex justify-center items-center h-screen"><div className="loader"></div></div>;
-
-                const sortedMatches = [...(torneo.matches || [])].sort((a,b) => a.round - b.round || a.id.localeCompare(b.id));
-
-                return (
-                     <div className="container mx-auto p-4 md:p-8">
-                        {scoringMatch && 
-                            <ScoreMatchForm 
-                                match={scoringMatch}
-                                onSave={handleSaveScore}
-                                onCancel={() => setScoringMatch(null)}
-                            />
-                        }
-                        <header className="flex flex-wrap justify-between items-center mb-8 gap-4">
-                             <h1 className="text-2xl md:text-3xl font-bold">Panel de Administración</h1>
-                             <div>
-                                 <button onClick={copyPublicLink} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mr-4 transition">Copiar Enlace</button>
-                                 <button onClick={() => signOut(auth)} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">Cerrar Sesión</button>
-                             </div>
-                        </header>
-                        
-                        <div className="space-y-8">
-                            <div className="bg-white p-6 rounded-xl shadow-lg">
-                                <h2 className="text-xl font-bold mb-2">✨ Configuración de IA (Gemini)</h2>
-                                 <p className="text-sm text-gray-600 mb-4">Ingresa tu API Key de Google Gemini para habilitar la generación de resúmenes de partidos.</p>
-                                 <input 
-                                    type="password" value={geminiApiKey}
-                                    onChange={e => {
-                                        setGeminiApiKey(e.target.value);
-                                        localStorage.setItem('geminiApiKey', e.target.value);
-                                    }}
-                                    placeholder="Introduce tu Gemini API Key"
-                                    className="w-full px-3 py-2 border rounded-md"
-                                />
-                            </div>
-                            <div className="bg-white p-6 rounded-xl shadow-lg">
-                                 <h2 className="text-2xl font-bold mb-4">Gestión de Partidos</h2>
-                                 <AddMatchForm 
-                                    teamNames={Object.keys(torneo.teams)} 
-                                    onAddMatch={handleAddMatch}
-                                    existingMatches={torneo.matches || []}
-                                 />
-                                 <div className="mt-6 space-y-4">
-                                    {sortedMatches.map(match => (
-                                         <div key={match.id} className="border-t mt-4 pt-4 flex justify-between items-center flex-wrap gap-2">
-                                             <div>
-                                                <p className="font-bold">Ronda {match.round}: {match.alliance.join(' y ')}</p>
-                                                <p className={match.finished ? "text-green-600" : "text-orange-500"}>
-                                                    {match.finished ? `Finalizado: ${match.score} pts` : 'Pendiente'}
-                                                </p>
-                                                {match.commentary && <p className="text-sm italic mt-1 text-gray-600">"{match.commentary}"</p>}
-                                             </div>
-                                             <div className="flex gap-2 flex-shrink-0">
-                                                <button onClick={() => setScoringMatch(match)} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-sm">
-                                                    {match.finished ? 'Editar' : 'Puntuar'}
-                                                </button>
-                                                 {match.finished && (
-                                                     <button
-                                                         onClick={() => generateCommentary(match.id)} disabled={loadingCommentary === match.id}
-                                                         className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-1 px-3 rounded text-sm disabled:bg-gray-400">
-                                                         {loadingCommentary === match.id ? '...' : '✨ IA'}
-                                                     </button>
-                                                 )}
-                                             </div>
-                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                     </div>
-                );
-            }
-            
-            function Login() {
-                const [email, setEmail] = useState('');
-                const [password, setPassword] = useState('');
-                const [error, setError] = useState('');
-
-                const handleLogin = async (e) => {
-                    e.preventDefault();
-                    setError('');
-                    try {
-                        await signInWithEmailAndPassword(auth, email, password);
-                    } catch (err) {
-                        setError('Error al iniciar sesión. Verifica tus credenciales.');
-                        console.error(err);
-                    }
-                };
-                
-                return (
-                    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                        <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
-                            <h2 className="text-3xl font-bold text-center">Acceso Organización</h2>
-                            <form onSubmit={handleLogin} className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} required 
-                                    className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"/>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Contraseña</label>
-                                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-                                    className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"/>
-                                </div>
-                                {error && <p className="text-red-500 text-sm">{error}</p>}
-                                <div>
-                                    <button type="submit" className="w-full py-2 px-4 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
-                                        Iniciar Sesión
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                );
-            }
-
-            function App() {
-                const { user, loading } = useAuth();
-                const path = window.location.pathname;
-
-                if (loading) {
-                    return <div className="flex justify-center items-center h-screen"><div className="loader"></div></div>;
-                }
-
-                if (path.startsWith('/torneo/')) {
-                    return <PublicView />;
-                }
-
-                if (path.startsWith('/login')) {
-                    return user ? <AdminDashboard /> : <Login />;
-                }
-                
-                return user ? <AdminDashboard /> : <Login />;
-            }
-
-            const root = ReactDOM.createRoot(document.getElementById('root'));
-            root.render(
-                <AuthProvider>
-                    <App />
-                </AuthProvider>
+          if (loading)
+            return (
+              <div className="flex justify-center items-center h-screen">
+                <div className="loader"></div>
+              </div>
             );
-        }
-    </script>
-</body>
-</html>
+          if (error)
+            return (
+              <div className="text-center mt-10 text-red-500">{error}</div>
+            );
 
+          const rankedTeams = torneo
+            ? Object.values(torneo.teams).sort((a, b) => b.points - a.points)
+            : [];
+          const sortedMatches =
+            torneo && torneo.matches
+              ? [...torneo.matches].sort((a, b) => a.round - b.round)
+              : [];
+
+          return (
+            <div className="container mx-auto p-4 md:p-8">
+              <header className="text-center mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
+                  {torneo.eventName}
+                </h1>
+                <p className="text-gray-600 mt-2">Resultados en Vivo</p>
+              </header>
+              <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <h2 className="text-2xl font-bold mb-4 text-center">
+                  Tabla de Posiciones
+                </h2>
+                <ol className="space-y-3">
+                  {rankedTeams.map((team, index) => (
+                    <li
+                      key={team.name}
+                      className={`flex justify-between items-center p-4 rounded-lg text-white shadow ${
+                        index === 0
+                          ? "bg-red-500"
+                          : index === 1
+                          ? "bg-blue-400"
+                          : index === 2
+                          ? "bg-green-700"
+                          : index === 3
+                          ? "bg-yellow-400"
+                          : index === 4
+                          ? "bg-orange-400"
+                          : index === 5
+                          ? "bg-violet-400"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <span className="text-lg font-bold mr-4">
+                          {index + 1}
+                        </span>
+                        <span className="text-xl">{team.name}</span>
+                      </div>
+                      <span className="text-2xl font-bold">
+                        {team.points} Pts
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <h2 className="text-2xl font-bold mb-4 text-center">
+                  Fixture y Resultados
+                </h2>
+                <div className="space-y-4">
+                  {sortedMatches.length > 0 ? (
+                    sortedMatches.map((match) => (
+                      <div
+                        key={match.id}
+                        className="border border-gray-200 p-4 rounded-lg shadow-sm"
+                      >
+                        <p className="font-bold text-lg">
+                          Ronda {match.round}: Alianza{" "}
+                          {match.alliance.join(" y ")}
+                        </p>
+                        {match.finished ? (
+                          <div>
+                            <p className="text-green-600 font-bold text-xl">
+                              {match.score} Puntos
+                            </p>
+                            {match.commentary && (
+                              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-sm font-semibold text-blue-800">
+                                  ✨ Comentario de la IA:
+                                </p>
+                                <p className="text-blue-700 italic">
+                                  "{match.commentary}"
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-orange-500">Pendiente</p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500">
+                      El fixture aún no ha sido cargado.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function ScoreMatchForm({ match, onSave, onCancel }) {
+          const initialPoints = match.score || 0;
+          const [scores, setScores] = useState(
+            match.details || {
+              orbitas: 0,
+              orbitasAmplificador: 0,
+              rocasLunares: 0,
+              estacionamientoParcial: 0,
+              estacionamientoTotal: 0,
+              amplificadorEnPedestal: false,
+              tarjetasAmarillas: 0,
+            }
+          );
+
+          const calculateTotal = () => {
+            let total = 0;
+            total += (scores.orbitas || 0) * 3;
+            total += (scores.orbitasAmplificador || 0) * 5;
+            total += (scores.rocasLunares || 0) * 8;
+            total += (scores.estacionamientoParcial || 0) * 3;
+            total += (scores.estacionamientoTotal || 0) * 5;
+            if (scores.amplificadorEnPedestal) total += 20;
+            total -= (scores.tarjetasAmarillas || 0) * 2;
+            return total;
+          };
+
+          const handleSubmit = (e) => {
+            e.preventDefault();
+            onSave(match.id, calculateTotal(), scores);
+          };
+
+          return (
+            <div className="modal-backdrop">
+              <div className="modal-content">
+                <h3 className="text-2xl font-bold mb-4">
+                  Registrar Puntos para {match.alliance.join(" y ")}
+                </h3>
+                <form
+                  onSubmit={handleSubmit}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                >
+                  {Object.keys(scores).map((key) => (
+                    <div
+                      key={key}
+                      className={
+                        typeof scores[key] === "boolean"
+                          ? "md:col-span-2 flex items-center gap-2"
+                          : ""
+                      }
+                    >
+                      <label className="block text-sm font-medium text-gray-700 capitalize">
+                        {key.replace(/([A-Z])/g, " $1")}
+                      </label>
+                      {typeof scores[key] === "boolean" ? (
+                        <input
+                          type="checkbox"
+                          name={key}
+                          checked={scores[key]}
+                          onChange={(e) =>
+                            setScores((s) => ({
+                              ...s,
+                              [key]: e.target.checked,
+                            }))
+                          }
+                          className="mt-1 h-5 w-5"
+                        />
+                      ) : (
+                        <input
+                          type="number"
+                          name={key}
+                          value={scores[key]}
+                          onChange={(e) =>
+                            setScores((s) => ({
+                              ...s,
+                              [key]: parseInt(e.target.value) || 0,
+                            }))
+                          }
+                          min="0"
+                          className="w-full mt-1 px-3 py-2 border rounded-md"
+                        />
+                      )}
+                    </div>
+                  ))}
+                  <div className="md:col-span-2 text-center mt-4">
+                    <p className="text-xl font-bold">
+                      Total: {calculateTotal()} Puntos
+                    </p>
+                  </div>
+                  <div className="md:col-span-2 flex justify-end gap-4 mt-4">
+                    <button
+                      type="button"
+                      onClick={onCancel}
+                      className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                    >
+                      Guardar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          );
+        }
+
+        function AddMatchForm({ teamNames, onAddMatch, existingMatches }) {
+          const [round, setRound] = useState(1);
+          const [team1, setTeam1] = useState("");
+          const [team2, setTeam2] = useState("");
+          const [error, setError] = useState("");
+
+          const handleSubmit = (e) => {
+            e.preventDefault();
+            setError("");
+            if (!team1 || !team2 || team1 === team2) {
+              setError("Debes seleccionar dos equipos diferentes.");
+              return;
+            }
+            const allianceExists = existingMatches.some(
+              (m) =>
+                m.round == round &&
+                m.alliance.includes(team1) &&
+                m.alliance.includes(team2)
+            );
+            if (allianceExists) {
+              setError(
+                `La alianza ${team1} y ${team2} ya existe en la ronda ${round}.`
+              );
+              return;
+            }
+            const newMatch = {
+              id: `r${round}-${team1}-${team2}-${Date.now()}`,
+              round: parseInt(round),
+              alliance: [team1, team2],
+              finished: false,
+              score: 0,
+              commentary: "",
+              details: null,
+            };
+            onAddMatch(newMatch);
+            setTeam1("");
+            setTeam2("");
+          };
+
+          return (
+            <form
+              onSubmit={handleSubmit}
+              className="p-4 bg-gray-50 rounded-lg border space-y-3"
+            >
+              <h3 className="text-lg font-semibold">Crear Nueva Alianza</h3>
+              {error && (
+                <p className="text-red-500 text-sm p-2 bg-red-100 rounded-md">
+                  {error}
+                </p>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input
+                  type="number"
+                  value={round}
+                  onChange={(e) => setRound(e.target.value)}
+                  min="1"
+                  className="p-2 border rounded-md"
+                  placeholder="Ronda"
+                  required
+                />
+                <select
+                  value={team1}
+                  onChange={(e) => setTeam1(e.target.value)}
+                  className="p-2 border rounded-md"
+                  required
+                >
+                  <option value="">Seleccionar Equipo 1</option>
+                  {teamNames.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={team2}
+                  onChange={(e) => setTeam2(e.target.value)}
+                  className="p-2 border rounded-md"
+                  required
+                >
+                  <option value="">Seleccionar Equipo 2</option>
+                  {teamNames.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+              >
+                Añadir Alianza
+              </button>
+            </form>
+          );
+        }
+
+        function AdminDashboard() {
+          const [torneo, setTorneo] = useState(null);
+          const [geminiApiKey, setGeminiApiKey] = useState(
+            () => localStorage.getItem("geminiApiKey") || ""
+          );
+          const [loadingCommentary, setLoadingCommentary] = useState(null);
+          const [scoringMatch, setScoringMatch] = useState(null);
+
+          useEffect(() => {
+            const docRef = doc(db, "tournaments", TORNEO_ID_GLOBAL);
+            const unsubscribe = onSnapshot(
+              docRef,
+              (docSnap) => {
+                if (docSnap.exists()) {
+                  setTorneo(docSnap.data());
+                } else {
+                  setDoc(docRef, initialTournamentData).then(() =>
+                    setTorneo(initialTournamentData)
+                  );
+                }
+              },
+              (error) => console.error("Error fetching tournament:", error)
+            );
+            return () => unsubscribe();
+          }, []);
+
+          const updateTournament = async (newData) => {
+            const docRef = doc(db, "tournaments", TORNEO_ID_GLOBAL);
+            await updateDoc(docRef, newData);
+          };
+
+          const handleAddMatch = (newMatch) => {
+            const updatedMatches = [...(torneo.matches || []), newMatch];
+            updateTournament({ matches: updatedMatches });
+          };
+
+          const handleSaveScore = (matchId, newScore, details) => {
+            const updatedMatches = torneo.matches.map((m) =>
+              m.id === matchId
+                ? { ...m, finished: true, score: newScore, details }
+                : m
+            );
+
+            const updatedTeams = JSON.parse(JSON.stringify(torneo.teams));
+            Object.keys(updatedTeams).forEach((teamName) => {
+              updatedTeams[teamName].points = 0;
+            });
+            updatedMatches.forEach((m) => {
+              if (m.finished) {
+                m.alliance.forEach((teamName) => {
+                  if (updatedTeams[teamName]) {
+                    updatedTeams[teamName].points += m.score;
+                  }
+                });
+              }
+            });
+
+            updateTournament({ matches: updatedMatches, teams: updatedTeams });
+            setScoringMatch(null);
+          };
+
+          const generateCommentary = async (matchId) => {
+            // ... (implementación de Gemini sin cambios)
+          };
+
+          const copyPublicLink = () => {
+            if (!torneo || !torneo.publicViewId) return;
+            const link = `${window.location.origin}/torneo/${torneo.publicViewId}`;
+            navigator.clipboard
+              .writeText(link)
+              .then(() => alert("Enlace copiado al portapapeles!"));
+          };
+
+          if (!torneo)
+            return (
+              <div className="flex justify-center items-center h-screen">
+                <div className="loader"></div>
+              </div>
+            );
+
+          const sortedMatches = [...(torneo.matches || [])].sort(
+            (a, b) => a.round - b.round || a.id.localeCompare(b.id)
+          );
+
+          return (
+            <div className="container mx-auto p-4 md:p-8">
+              {scoringMatch && (
+                <ScoreMatchForm
+                  match={scoringMatch}
+                  onSave={handleSaveScore}
+                  onCancel={() => setScoringMatch(null)}
+                />
+              )}
+              <header className="flex flex-wrap justify-between items-center mb-8 gap-4">
+                <h1 className="text-2xl md:text-3xl font-bold">
+                  Panel de Administración
+                </h1>
+                <div>
+                  <button
+                    onClick={copyPublicLink}
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mr-4 transition"
+                  >
+                    Copiar Enlace
+                  </button>
+                  <button
+                    onClick={() => signOut(auth)}
+                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </div>
+              </header>
+
+              <div className="space-y-8">
+                <div className="bg-white p-6 rounded-xl shadow-lg">
+                  <h2 className="text-xl font-bold mb-2">
+                    ✨ Configuración de IA (Gemini)
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Ingresa tu API Key de Google Gemini para habilitar la
+                    generación de resúmenes de partidos.
+                  </p>
+                  <input
+                    type="password"
+                    value={geminiApiKey}
+                    onChange={(e) => {
+                      setGeminiApiKey(e.target.value);
+                      localStorage.setItem("geminiApiKey", e.target.value);
+                    }}
+                    placeholder="Introduce tu Gemini API Key"
+                    className="w-full px-3 py-2 border rounded-md"
+                  />
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-lg">
+                  <h2 className="text-2xl font-bold mb-4">
+                    Gestión de Partidos
+                  </h2>
+                  <AddMatchForm
+                    teamNames={Object.keys(torneo.teams)}
+                    onAddMatch={handleAddMatch}
+                    existingMatches={torneo.matches || []}
+                  />
+                  <div className="mt-6 space-y-4">
+                    {sortedMatches.map((match) => (
+                      <div
+                        key={match.id}
+                        className="border-t mt-4 pt-4 flex justify-between items-center flex-wrap gap-2"
+                      >
+                        <div>
+                          <p className="font-bold">
+                            Ronda {match.round}: {match.alliance.join(" y ")}
+                          </p>
+                          <p
+                            className={
+                              match.finished
+                                ? "text-green-600"
+                                : "text-orange-500"
+                            }
+                          >
+                            {match.finished
+                              ? `Finalizado: ${match.score} pts`
+                              : "Pendiente"}
+                          </p>
+                          {match.commentary && (
+                            <p className="text-sm italic mt-1 text-gray-600">
+                              "{match.commentary}"
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => setScoringMatch(match)}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-sm"
+                          >
+                            {match.finished ? "Editar" : "Puntuar"}
+                          </button>
+                          {match.finished && (
+                            <button
+                              onClick={() => generateCommentary(match.id)}
+                              disabled={loadingCommentary === match.id}
+                              className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-1 px-3 rounded text-sm disabled:bg-gray-400"
+                            >
+                              {loadingCommentary === match.id ? "..." : "✨ IA"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function Login() {
+          const [email, setEmail] = useState("");
+          const [password, setPassword] = useState("");
+          const [error, setError] = useState("");
+
+          const handleLogin = async (e) => {
+            e.preventDefault();
+            setError("");
+            try {
+              await signInWithEmailAndPassword(auth, email, password);
+            } catch (err) {
+              setError("Error al iniciar sesión. Verifica tus credenciales.");
+              console.error(err);
+            }
+          };
+
+          return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+              <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+                <h2 className="text-3xl font-bold text-center">
+                  Acceso Organización
+                </h2>
+                <form onSubmit={handleLogin} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                  <div>
+                    <button
+                      type="submit"
+                      className="w-full py-2 px-4 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+                    >
+                      Iniciar Sesión
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          );
+        }
+
+        function App() {
+          const { user, loading } = useAuth();
+          const path = window.location.pathname;
+
+          if (loading) {
+            return (
+              <div className="flex justify-center items-center h-screen">
+                <div className="loader"></div>
+              </div>
+            );
+          }
+
+          if (path.startsWith("/torneo/")) {
+            return <PublicView />;
+          }
+
+          if (path.startsWith("/login")) {
+            return user ? <AdminDashboard /> : <Login />;
+          }
+
+          return user ? <AdminDashboard /> : <Login />;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        );
+      }
+    </script>
+  </body>
+</html>
